@@ -1,9 +1,9 @@
 import time
+import configparser
 from slackclient import SlackClient
 from phue import Bridge, AllLights
 
 # Slack setup
-SLACK_BOT_ID = ''
 SLACK_BOT_TOKEN = ''
 
 # Hue setup
@@ -86,7 +86,7 @@ def back_to_normal():
 
 
 def parse_test_message(output):
-    if 'text' in output and 'user' in output and output['user'] != SLACK_BOT_ID:
+    if 'text' in output and output['text'] in (NORMAL, FAILURE):
         update_state(output['text'], output['channel'])
 
 def parse_jenkins_message(output):
@@ -107,6 +107,15 @@ def parse_slack_output(rtm_output):
         parse_jenkins_message(output)
 
 if __name__ == '__main__':
+    config = configparser.ConfigParser()
+    try: 
+        config.read('huebot.ini')
+        SLACK_BOT_TOKEN = config['SLACK']['Token']
+        HUE_BRIDGE_IP = config['HUE']['BridgeIp']
+
+    except:
+        print("Missing or invalid huebot.ini file")
+        exit()
 
     while True: 
         try:
@@ -123,6 +132,8 @@ if __name__ == '__main__':
                     time.sleep(1)
             else:
                 print("HueBot did not connect, check bot ID and Slack token")
+        except KeyboardInterrupt:
+            exit()
         except:
-            # error occurred, restart in a min
+            # unknown error occurred, restart in a minute
             time.sleep(60)

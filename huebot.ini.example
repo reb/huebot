@@ -1,0 +1,8 @@
+[SLACK]
+# The Slack API Token is generated when you create a new bot user and can
+# be found in the configuration of the bot user in Slack's admin panel
+Token = <ENTER SLACK TOKEN>
+
+[HUE]
+# Format: 127.0.0.1
+BridgeIp = <ENTER BRIDGE IP>
