@@ -1,1 +1,7 @@
+# Compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Configuration files
 huebot.ini
