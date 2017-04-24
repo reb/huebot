@@ -3,6 +3,26 @@
 _failures = set()
 
 
+def __none():
+    pass
+
+__on_failure = __none
+__on_warning = __none
+__on_normal = __none
+
+
+def __set(handler):
+    def set_handler(callback):
+        nonlocal handler
+        handler = callback
+    return set_handler
+
+
+set_on_failure = __set(__on_failure)
+set_on_warning = __set(__on_warning)
+set_on_normal = __set(__on_warning)
+
+
 def _observe(func):
     """
     Decorate functions with an observer pattern.
@@ -24,26 +44,6 @@ def _observe(func):
             __on_failure()
 
     return add_observer
-
-
-def __on_failure():
-    pass
-
-
-def __on_normal():
-    pass
-
-
-def set_on_failure(callback):
-    """Set the method to be executed when the status changes to failure."""
-    global __on_failure
-    __on_failure = callback
-
-
-def set_on_normal(callback):
-    """Set the method to be executed when the status changes to normal."""
-    global __on_normal
-    __on_normal = callback
 
 
 @_observe
