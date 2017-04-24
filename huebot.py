@@ -6,14 +6,18 @@ from phue import Bridge, AllLights
 from huebot import State
 
 
+FAILURE_HUE = 0
+FAILURE_SATURATION = 254
+
+WARNING_HUE = 5411
+WARNING_SATURATION = 254
+
 NORMAL_HUE = 7316
 NORMAL_SATURATION = 204
 
 SUCCESS_HUE = 25600
 SUCCESS_SATURATION = 254
 
-FAILURE_HUE = 0
-FAILURE_SATURATION = 254
 
 slack_client = None
 
@@ -24,6 +28,12 @@ def indicate_failure():
     """Turn to lights to failure colors."""
     all_lights.hue = FAILURE_HUE
     all_lights.saturation = FAILURE_SATURATION
+
+
+def indicate_warning():
+    """Turn to lights to warning colors."""
+    all_lights.hue = WARNING_HUE
+    all_lights.saturation = WARNING_SATURATION
 
 
 def back_to_normal():
@@ -84,8 +94,9 @@ if __name__ == '__main__':
         print("Missing or invalid huebot.ini file")
         exit()
 
-    State.set_on_normal(back_to_normal)
     State.set_on_failure(indicate_failure)
+    State.set_on_warning(indicate_warning)
+    State.set_on_normal(back_to_normal)
 
     while True:
         try:

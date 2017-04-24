@@ -43,19 +43,18 @@ def _observe(func):
         warning_before = is_warning()
         normal_before = is_normal()
         func(*args)
-        print("failures:", _failures)
-        print("warnings:", _failures)
+        print("failures:", _failures, "warnings:", _warnings)
         failure_after = is_failure()
         warning_after = is_warning()
         normal_after = is_normal()
 
-        if (warning_before or normal_before) and failure_after:
+        if not failure_before and failure_after:
             __on_failure()
 
-        if (failure_before or normal_before) and warning_after:
+        if not warning_before and warning_after:
             __on_warning()
 
-        if (failure_before or warning_before) and normal_after:
+        if not normal_before and normal_after:
             __on_normal()
 
     return add_observer
@@ -63,19 +62,24 @@ def _observe(func):
 
 @_observe
 def failure(key):
-    """Add a failure for the given key."""
+    """Set the status to failure for the given key."""
     _failures.add(key)
 
 
 @_observe
 def warning(key):
-    """Add a warning for the given key."""
+    """Set the status to warning for the given key."""
+    try:
+        _failures.remove(key)
+    except KeyError:
+        pass
+
     _warnings.add(key)
 
 
 @_observe
 def normal(key):
-    """Remove any status for the given key."""
+    """Return the status to normal for the given key."""
     try:
         _failures.remove(key)
     except KeyError:
@@ -94,7 +98,7 @@ def is_failure():
 
 def is_warning():
     """Return the current warning status."""
-    return len(_warnings) > 0 and len(_warnings) == 0
+    return len(_warnings) > 0 and len(_failures) == 0
 
 
 def is_normal():
