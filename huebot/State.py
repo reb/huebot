@@ -11,16 +11,22 @@ __on_warning = __none
 __on_normal = __none
 
 
-def __set(handler):
-    def set_handler(callback):
-        nonlocal handler
-        handler = callback
-    return set_handler
+def set_on_failure(callback):
+    """Set the function to call when the state changes to failure."""
+    global __on_failure
+    __on_failure = callback
 
 
-set_on_failure = __set(__on_failure)
-set_on_warning = __set(__on_warning)
-set_on_normal = __set(__on_warning)
+def set_on_warning(callback):
+    """Set the function to call when the state changes to warning."""
+    global __on_warning
+    __on_warning = callback
+
+
+def set_on_normal(callback):
+    """Set the function to call when the state changes to normal."""
+    global __on_normal
+    __on_normal = callback
 
 
 def _observe(func):

@@ -42,11 +42,13 @@ def back_to_normal():
 
 def parse_test_message(output):
     """Parse user written test messages."""
-    if 'text' in output and output['text'] in ('normal', 'failure'):
-        if output['text'] == 'normal':
-            notify = State.normal
-        elif output['text'] == 'failure':
+    if 'text' in output:
+        if output['text'] == 'failure':
             notify = State.failure
+        elif output['text'] == 'warning':
+            notify = State.warning
+        elif output['text'] == 'normal':
+            notify = State.normal
 
         notify(output['channel'])
 
