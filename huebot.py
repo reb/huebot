@@ -1,5 +1,6 @@
 """HueBot Slack bot connects Slack channels to Hue lights."""
 from time import sleep
+from traceback import print_exc
 from configparser import ConfigParser
 from slackclient import SlackClient
 from phue import Bridge, AllLights
@@ -117,5 +118,6 @@ if __name__ == '__main__':
             if debug:
                 raise
 
-            # unknown error occurred, restart in a minute
+            # unknown error occurred, log & restart in a minute
+            print_exc()
             sleep(60)
