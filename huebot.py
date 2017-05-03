@@ -54,13 +54,11 @@ def parse_test_message(output):
     """Parse user written test messages."""
     if 'text' in output:
         if output['text'] == 'failure':
-            notify = State.failure
+            State.failure(output['channel'])
         elif output['text'] == 'warning':
-            notify = State.warning
+            State.warning(output['channel'])
         elif output['text'] == 'normal':
-            notify = State.normal
-
-        notify(output['channel'])
+            State.normal(output['channel'])
 
 
 def parse_jenkins_message(output):
