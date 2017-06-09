@@ -64,10 +64,17 @@ def get_channel_name(channel):
     try:
         return slack_channels[channel]
     except KeyError:
-        response = slack_client.api_call('channels.info', channel=channel)
-        name = response['channel']['name']
-        slack_channels[channel] = name
-        return name
+        try:
+            response = slack_client.api_call('channels.info', channel=channel)
+            name = response['channel']['name']
+            slack_channels[channel] = name
+            return name
+
+        except KeyError:
+            response = slack_client.api_call('groups.info', channel=channel)
+            name = response['group']['name']
+            slack_channels[channel] = name
+            return name
 
 
 def parse_test_message(output):
