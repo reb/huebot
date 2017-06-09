@@ -21,6 +21,12 @@ SUCCESS_SATURATION = 254
 
 
 slack_client = None
+slack_channels = {}
+
+# These are the colors for slack attachement messages
+GOOD = '36a64f'
+WARNING = 'daa038'
+DANGER = 'd00000'
 
 all_lights = None
 
@@ -51,27 +57,57 @@ def back_to_normal():
     all_lights.transitiontime = None
 
 
+def get_channel_name(channel):
+    """Retrieve the a channel's name from the Slack API."""
+    global slack_channels
+
+    try:
+        return slack_channels[channel]
+    except KeyError:
+        response = slack_client.api_call('channels.info', channel=channel)
+        name = response['channel']['name']
+        slack_channels[channel] = name
+        return name
+
+
 def parse_test_message(output):
     """Parse user written test messages."""
-    if 'text' in output:
-        if output['text'] == 'failure':
-            State.failure(output['channel'])
-        elif output['text'] == 'warning':
-            State.warning(output['channel'])
-        elif output['text'] == 'normal':
-            State.normal(output['channel'])
+    try:
+        channel = get_channel_name(output['channel'])
+        text = output['text']
+    except KeyError:
+        return False
+
+    if text == 'failure':
+        State.failure(channel)
+    elif text == 'warning':
+        State.warning(channel)
+    elif text == 'normal':
+        State.normal(channel)
 
 
 def parse_jenkins_message(output):
     """Parse Jenkins written messages."""
-    if 'attachments' in output:
-        for attachment in output['attachments']:
-            # green color from attachment 'good' setting
-            if attachment['color'] == '36a64f':
-                State.normal(output['channel'])
-            # red color from attachment 'danger' setting
-            elif attachment['color'] == 'd00000':
-                State.failure(output['channel'])
+    try:
+        channel = get_channel_name(output['channel'])
+        color = output['attachments'][0]['color']
+    except KeyError:
+        return False
+
+    if "-test-" in channel:
+        if color == GOOD:
+            State.normal(channel)
+        elif color == WARNING:
+            State.warning(channel)
+        elif color == DANGER:
+            State.warning(channel)
+    else:
+        if color == GOOD:
+            State.normal(channel)
+        elif color == WARNING:
+            State.warning(channel)
+        elif color == DANGER:
+            State.failure(channel)
 
 
 def parse_slack_output(rtm_output):
