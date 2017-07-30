@@ -3,6 +3,9 @@
 # be found in the configuration of the bot user in Slack's admin panel
 Token = <ENTER SLACK TOKEN>
 
+# The channel to post failure and warning messages to, leave blank to disable
+ReportingChannel = general
+
 [HUE]
 # Format: 127.0.0.1
 BridgeIp = <ENTER BRIDGE IP>
