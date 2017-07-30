@@ -32,6 +32,8 @@ class Slack:
             raise IOError
 
         self.state = state
+        self.state.on_new_failure = self.message_failure
+        self.state.on_new_warning = self.message_warning
 
         # Retrieve parse functions
         self.parse_functions = []
@@ -72,6 +74,14 @@ class Slack:
         for output in rtm_output:
             for parse in self.parse_functions:
                 parse(output)
+
+    def message_failure(self, channel):
+        """Send a message to indicate a failure happening."""
+        print("Things failed")
+
+    def message_warning(self, channel):
+        """Send a message to indicate a failure happening."""
+        print("Things are unstable")
 
     @_parse
     def __test(self, output):
