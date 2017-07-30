@@ -15,6 +15,8 @@ if __name__ == '__main__':
         slack_token = config['SLACK']['Token']
         hue_bridge_ip = config['HUE']['BridgeIp']
         debug = config.getboolean('GENERAL', 'Debug', fallback=False)
+        reporting_channel = config.get('SLACK', 'ReportingChannel',
+                                       fallback=None)
 
     except ConfigParserError:
         print("Missing or invalid huebot.ini file")
@@ -25,7 +27,7 @@ if __name__ == '__main__':
     while True:
         try:
             huebot.hue.HueLights(hue_bridge_ip, state)
-            slack = huebot.slack.Slack(slack_token, state)
+            slack = huebot.slack.Slack(slack_token, reporting_channel, state)
 
             while(True):
                 slack.read()

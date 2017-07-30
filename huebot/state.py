@@ -46,10 +46,15 @@ class State:
         self.on_warning = do_nothing
         self.on_normal = do_nothing
 
+        self.on_new_failure = do_nothing
+        self.on_new_warning = do_nothing
+
     @_observe
     def failure(self, key):
         """Set the status to failure for the given key."""
-        self._failures.add(key)
+        if key not in self._failures:
+            self._failures.add(key)
+            self.on_new_failure(key)
 
     @_observe
     def warning(self, key):
@@ -59,7 +64,9 @@ class State:
         except KeyError:
             pass
 
-        self._warnings.add(key)
+        if key not in self._warnings:
+            self._warnings.add(key)
+            self.on_new_warning(key)
 
     @_observe
     def normal(self, key):
