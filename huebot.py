@@ -2,9 +2,10 @@
 from time import sleep
 from traceback import print_exc
 from configparser import ConfigParser
+from configparser import Error as ConfigParserError
 from slackclient import SlackClient
 from phue import Bridge, AllLights
-from huebot import State
+import huebot.state
 
 
 FAILURE_HUE = 0
@@ -23,7 +24,7 @@ SUCCESS_SATURATION = 254
 slack_client = None
 slack_channels = {}
 
-# These are the colors for slack attachement messages
+# These are the colors for slack attachment messages
 GOOD = '36a64f'
 WARNING = 'daa038'
 DANGER = 'd00000'
@@ -32,13 +33,13 @@ all_lights = None
 
 
 def indicate_failure():
-    """Turn to lights to failure colors."""
+    """Turn lights to failure colors."""
     all_lights.hue = FAILURE_HUE
     all_lights.saturation = FAILURE_SATURATION
 
 
 def indicate_warning():
-    """Turn to lights to warning colors."""
+    """Turn lights to warning colors."""
     all_lights.hue = WARNING_HUE
     all_lights.saturation = WARNING_SATURATION
 
@@ -77,7 +78,7 @@ def get_channel_name(channel):
             return name
 
 
-def parse_test_message(output):
+def parse_test_message(output, state):
     """Parse user written test messages."""
     try:
         channel = get_channel_name(output['channel'])
@@ -86,14 +87,14 @@ def parse_test_message(output):
         return False
 
     if text == 'failure':
-        State.failure(channel)
+        state.failure(channel)
     elif text == 'warning':
-        State.warning(channel)
+        state.warning(channel)
     elif text == 'normal':
-        State.normal(channel)
+        state.normal(channel)
 
 
-def parse_jenkins_message(output):
+def parse_jenkins_message(output, state):
     """Parse Jenkins written messages."""
     try:
         channel = get_channel_name(output['channel'])
@@ -103,25 +104,25 @@ def parse_jenkins_message(output):
 
     if "-test-" in channel:
         if color == GOOD:
-            State.normal(channel)
+            state.normal(channel)
         elif color == WARNING:
-            State.warning(channel)
+            state.warning(channel)
         elif color == DANGER:
-            State.warning(channel)
+            state.warning(channel)
     else:
         if color == GOOD:
-            State.normal(channel)
+            state.normal(channel)
         elif color == WARNING:
-            State.warning(channel)
+            state.warning(channel)
         elif color == DANGER:
-            State.failure(channel)
+            state.failure(channel)
 
 
-def parse_slack_output(rtm_output):
+def parse_slack_output(rtm_output, state):
     """Parse the Slack RTM API events firehose for relevant messages."""
     for output in rtm_output:
-        parse_test_message(output)
-        parse_jenkins_message(output)
+        parse_test_message(output, state)
+        parse_jenkins_message(output, state)
 
 
 if __name__ == '__main__':
@@ -132,13 +133,14 @@ if __name__ == '__main__':
         hue_bridge_ip = config['HUE']['BridgeIp']
         debug = config.getboolean('GENERAL', 'Debug', fallback=False)
 
-    except:
+    except ConfigParserError:
         print("Missing or invalid huebot.ini file")
         exit()
 
-    State.set_on_failure(indicate_failure)
-    State.set_on_warning(indicate_warning)
-    State.set_on_normal(back_to_normal)
+    state = huebot.state.State()
+    state.on_failure = indicate_failure
+    state.on_warning = indicate_warning
+    state.on_normal = back_to_normal
 
     while True:
         try:
@@ -151,7 +153,7 @@ if __name__ == '__main__':
             if slack_client.rtm_connect():
                 print("HueBot connected to Slack!")
                 while True:
-                    parse_slack_output(slack_client.rtm_read())
+                    parse_slack_output(slack_client.rtm_read(), state)
                     sleep(1)
             else:
                 print("HueBot did not connect, check bot ID and Slack token")
