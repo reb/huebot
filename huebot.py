@@ -4,21 +4,8 @@ from traceback import print_exc
 from configparser import ConfigParser
 from configparser import Error as ConfigParserError
 from slackclient import SlackClient
-from phue import Bridge, AllLights
 import huebot.state
-
-
-FAILURE_HUE = 0
-FAILURE_SATURATION = 254
-
-WARNING_HUE = 6865
-WARNING_SATURATION = 223
-
-NORMAL_HUE = 10991
-NORMAL_SATURATION = 78
-
-SUCCESS_HUE = 25600
-SUCCESS_SATURATION = 254
+import huebot.hue
 
 
 slack_client = None
@@ -28,34 +15,6 @@ slack_channels = {}
 GOOD = '36a64f'
 WARNING = 'daa038'
 DANGER = 'd00000'
-
-all_lights = None
-
-
-def indicate_failure():
-    """Turn lights to failure colors."""
-    all_lights.hue = FAILURE_HUE
-    all_lights.saturation = FAILURE_SATURATION
-
-
-def indicate_warning():
-    """Turn lights to warning colors."""
-    all_lights.hue = WARNING_HUE
-    all_lights.saturation = WARNING_SATURATION
-
-
-def back_to_normal():
-    """Set the lights back to normal."""
-    # celebrate success
-    all_lights.hue = SUCCESS_HUE
-    all_lights.saturation = SUCCESS_SATURATION
-    sleep(1)
-    # slowly transition to normal
-    all_lights.transitiontime = 600
-    all_lights.hue = NORMAL_HUE
-    all_lights.saturation = NORMAL_SATURATION
-    # reset the transitiontime
-    all_lights.transitiontime = None
 
 
 def get_channel_name(channel):
@@ -138,16 +97,10 @@ if __name__ == '__main__':
         exit()
 
     state = huebot.state.State()
-    state.on_failure = indicate_failure
-    state.on_warning = indicate_warning
-    state.on_normal = back_to_normal
 
     while True:
         try:
-            HUE_BRIDGE = Bridge(hue_bridge_ip)
-            all_lights = AllLights(HUE_BRIDGE)
-
-            print("HueBot connected with Hue Bridge!")
+            huebot.hue.HueLights(hue_bridge_ip, state)
 
             slack_client = SlackClient(slack_bot_token)
             if slack_client.rtm_connect():
