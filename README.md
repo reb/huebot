@@ -1,5 +1,5 @@
 # huebot
-Connecting [Philips Hue](www.meethue.com) lights with the build status is no easy task. Hue lights are only accessible from the local networkj, a build server is usually elsewhere.
+Connecting [Philips Hue](www.meethue.com) lights with the build status is no easy task. Hue lights are only accessible from the local network, a build server is usually elsewhere.
 
 This solution revolves around using [Slack](slack.com) as a communication layer between the two. Host this Slack bot on the local network and integrate build servers into Slack. When set up this will turn lights red when a build fails, orange if it's unstable, and flash green for a minute when it's back to normal.
 
@@ -13,7 +13,7 @@ Find a machine to run this Slack bot on. A [Raspberry Pi](www.raspberrypi.org) w
 ### Configuration
 * Copy `huebot.ini.example` to `huebot.ini`
 * [Create a bot user on Slack](https://my.slack.com/services/new/bot) and enter the API Token into the `[SLACK]` section under `Token`
-* Enter a channel name at `ReportingChannel` under the `[SLACK]` section to have a report on why the lights turned red, else remove that line
+* Enter a channel name under `ReportingChannel` in the `[SLACK]` section to have a report on why the lights turned red, else remove that line
 * [Find the IP of the Hue bridge](https://www.meethue.com/api/nupnp) and enter it into the `[HUE]` section under `BridgeIp`
 ### First run
 Start with 
